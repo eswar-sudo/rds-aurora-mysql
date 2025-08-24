@@ -1,0 +1,13 @@
+region         = "us-east-2"
+vpc_id         = "vpc-0ba170b684b33c719"
+subnet_ids     = ["subnet-04429f0dec1443e65","subnet-0823937ff39091080"]
+engine_type     = "aurora-mysql"  # Change to "mysql" or "aurora-mysql"
+#engine_type     = "mysql-cluster"  # Change to "mysql" or "aurora-mysql"
+db_identifier  = "eks-rds"
+db_name        = "mydatabase"
+db_username    = "admin"
+db_password    = "secure123"
+storage_gb = 20
+engine_version = "8.0.mysql_aurora.3.04.0"
+instance_class  = "db.t4g.medium"
+instance_count  = 1
