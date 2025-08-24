@@ -10,7 +10,7 @@ resource "random_password" "rds_password" {
 
 # Step 2: Create Secrets Manager secret
 resource "aws_secretsmanager_secret" "rds_secret" {
-  name = "${var.name}-credentials"
+  name = "${var.db_identifier}-credentials"
 }
 
 resource "aws_secretsmanager_secret_version" "rds_secret_version" {
