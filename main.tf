@@ -53,7 +53,7 @@ resource "aws_rds_cluster" "aurora" {
   engine                 = "aurora-mysql"
   engine_version         = var.engine_version
   master_username        = var.db_username
-  masyer_password = random_password.rds_password.result
+  master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
@@ -92,7 +92,7 @@ resource "aws_rds_cluster" "mysql_cluster" {
   engine                 = "mysql"
   engine_version         = var.engine_version
   master_username        = var.db_username
-  masyer_password        = random_password.rds_password.result
+  master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
