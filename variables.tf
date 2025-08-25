@@ -57,11 +57,6 @@ variable "storage_gb" {
   default     = 20
 }
 
-variable "allowed_cidr_blocks" {
-  default     = ["0.0.0.0/0"]
-  type        = list(string)
-}
-
 variable "instance_count" {
   description = "Number of instances for Aurora MySQL or MySQL Cluster"
   type        = number
