@@ -43,7 +43,7 @@ resource "aws_lambda_function" "rotation" {
   runtime          = "python3.9"
 
   filename         = "${path.module}/lambda_function_payload.zip"
-  source_code_hash = filebase64sha256("${path.module}/lambda_function_payload.zip")
+  #source_code_hash = filebase64sha256("${path.module}/lambda_function_payload.zip")
 
   depends_on = [null_resource.prepare_lambda_zip]
 }
