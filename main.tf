@@ -21,6 +21,52 @@ resource "aws_secretsmanager_secret_version" "rds_secret_version" {
   })
 }
 
+# Create the Lambda function for rotation
+resource "aws_lambda_function" "rotation" {
+  function_name = "secret-rotation"
+  role          = aws_iam_role.lambda_exec.arn
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.9"
+
+  filename         = "lambda_function_payload.zip"
+  source_code_hash = filebase64sha256("lambda_function_payload.zip")
+}
+
+# IAM role for Lambda
+resource "aws_iam_role" "lambda_exec" {
+  name = "lambda-secretsmanager-rotation-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+    }]
+  })
+}
+
+# Attach AWS managed policies (logging + Secrets Manager access)
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_secrets" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+}
+
+# 4. Enable rotation
+resource "aws_secretsmanager_secret_rotation" "example" {
+  secret_id           = aws_secretsmanager_secret.example.id
+  rotation_lambda_arn = aws_lambda_function.rotation.arn
+
+  rotation_rules {
+    automatically_after_days = 30
+  }
+}
+
 resource "aws_db_subnet_group" "this" {
   name       = "${var.db_identifier}-subnet-group"
   subnet_ids = var.subnet_ids
