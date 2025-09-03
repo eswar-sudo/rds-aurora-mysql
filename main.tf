@@ -113,7 +113,7 @@ resource "aws_lambda_function" "rotation" {
 
 # 7. Attach Lambda to secret for rotation
 resource "aws_secretsmanager_secret_rotation" "example" {
-  secret_id           = aws_secretsmanager_secret.example.id
+  secret_id           = aws_secretsmanager_secret.rds_secret.id
   rotation_lambda_arn = aws_lambda_function.rotation.arn
 
   rotation_rules {
