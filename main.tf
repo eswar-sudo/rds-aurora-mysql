@@ -46,6 +46,14 @@ resource "aws_iam_role_policy_attachment" "lambda_secrets" {
   policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
 }
 
+resource "aws_lambda_permission" "allow_secretsmanager" {
+  statement_id  = "AllowSecretsManagerInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.rotation.function_name
+  principal     = "secretsmanager.amazonaws.com"
+}
+
+
 # 4. Local file for Lambda code
 resource "local_file" "lambda_code" {
   filename = "${path.module}/lambda_function.py"
