@@ -108,7 +108,7 @@ resource "aws_lambda_function" "rotation" {
   runtime          = "python3.9"
 
   filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 }
 
 # 7. Attach Lambda to secret for rotation
