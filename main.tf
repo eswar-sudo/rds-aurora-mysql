@@ -21,35 +21,7 @@ resource "aws_secretsmanager_secret_version" "rds_secret_version" {
   })
 }
 
-resource "null_resource" "prepare_lambda_zip" {
-  provisioner "local-exec" {
-    command = <<EOT
-      if [ ! -f lambda_function_payload.zip ]; then
-        git clone https://github.com/aws-samples/aws-secrets-manager-rotation-lambdas.git tmp-lambda
-        cd tmp-lambda/SecretsManagerRDSMySQLRotationSingleUser
-        zip ../../lambda_function_payload.zip lambda_function.py
-        cd ../..
-        rm -rf tmp-lambda
-      fi
-    EOT
-    interpreter = ["/bin/bash", "-c"]
-  }
-}
-
-resource "aws_lambda_function" "rotation" {
-  function_name    = "rds-secret-rotation"
-  role             = aws_iam_role.lambda_exec.arn
-  handler          = "lambda_function.lambda_handler"
-  runtime          = "python3.9"
-
-  filename         = "${path.module}/lambda_function_payload.zip"
-  #source_code_hash = filebase64sha256("${path.module}/lambda_function_payload.zip")
-
-  depends_on = [null_resource.prepare_lambda_zip]
-}
-
-
-# IAM role for Lambda
+# 3. IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec" {
   name = "lambda-secretsmanager-rotation-role"
 
@@ -63,7 +35,7 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
-# Attach AWS managed policies (logging + Secrets Manager access)
+# Attach policies
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -74,9 +46,74 @@ resource "aws_iam_role_policy_attachment" "lambda_secrets" {
   policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
 }
 
-# 4. Enable rotation
+# 4. Local file for Lambda code
+resource "local_file" "lambda_code" {
+  filename = "${path.module}/lambda_function.py"
+  content  = <<PYTHON
+import boto3, json, string, secrets
+
+secrets_client = boto3.client('secretsmanager')
+
+def lambda_handler(event, context):
+    step = event['Step']
+    if step == "createSecret":
+        return create_secret(event)
+    elif step == "setSecret":
+        return set_secret(event)
+    elif step == "testSecret":
+        return test_secret(event)
+    elif step == "finishSecret":
+        return finish_secret(event)
+    else:
+        raise ValueError("Invalid step parameter")
+
+def create_secret(event):
+    print("Generating new password")
+    alphabet = string.ascii_letters + string.digits
+    password = ''.join(secrets.choice(alphabet) for i in range(16))
+    secrets_client.put_secret_value(
+        SecretId=event['SecretId'],
+        SecretString=json.dumps({"username": "admin", "password": password}),
+        VersionStages=['AWSPENDING']
+    )
+    return True
+
+def set_secret(event):
+    print("Setting secret in target system (mock)")
+    # Normally update DB password here
+    return True
+
+def test_secret(event):
+    print("Testing secret works (mock)")
+    return True
+
+def finish_secret(event):
+    print("Promoting secret to AWSCURRENT")
+    return True
+PYTHON
+}
+
+# 5. Zip file for Lambda
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_file = local_file.lambda_code.filename
+  output_path = "${path.module}/lambda_function_payload.zip"
+}
+
+# 6. Lambda function
+resource "aws_lambda_function" "rotation" {
+  function_name    = "inline-secret-rotation"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.9"
+
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
+}
+
+# 7. Attach Lambda to secret for rotation
 resource "aws_secretsmanager_secret_rotation" "example" {
-  secret_id           = aws_secretsmanager_secret.rds_secret.id
+  secret_id           = aws_secretsmanager_secret.example.id
   rotation_lambda_arn = aws_lambda_function.rotation.arn
 
   rotation_rules {
