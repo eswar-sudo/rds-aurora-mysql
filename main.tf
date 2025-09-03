@@ -155,12 +155,3 @@ resource "aws_rds_cluster_instance" "mysql_cluster_instances" {
   engine              = "mysql"
   publicly_accessible = false
 }
-
-resource "aws_secretsmanager_secret_rotation" "rds_secret_rotation" {
-  secret_id = aws_secretsmanager_secret.rds_secret.id
-
- # rotation_lambda_arn = aws_lambda_function.rds_rotation.arn
-  rotation_rules {
-    automatically_after_days = 30
-  }
-}
