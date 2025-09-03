@@ -21,16 +21,33 @@ resource "aws_secretsmanager_secret_version" "rds_secret_version" {
   })
 }
 
-# Create the Lambda function for rotation
-resource "aws_lambda_function" "rotation" {
-  function_name = "secret-rotation"
-  role          = aws_iam_role.lambda_exec.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.9"
-
-  filename         = "lambda_function_payload.zip"
-  source_code_hash = filebase64sha256("lambda_function_payload.zip")
+resource "null_resource" "prepare_lambda_zip" {
+  provisioner "local-exec" {
+    command = <<EOT
+      if [ ! -f lambda_function_payload.zip ]; then
+        git clone https://github.com/aws-samples/aws-secrets-manager-rotation-lambdas.git tmp-lambda
+        cd tmp-lambda/SecretsManagerRDSMySQLRotationSingleUser
+        zip ../../lambda_function_payload.zip lambda_function.py
+        cd ../..
+        rm -rf tmp-lambda
+      fi
+    EOT
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
+
+resource "aws_lambda_function" "rotation" {
+  function_name    = "rds-secret-rotation"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.9"
+
+  filename         = "${path.module}/lambda_function_payload.zip"
+  source_code_hash = filebase64sha256("${path.module}/lambda_function_payload.zip")
+
+  depends_on = [null_resource.prepare_lambda_zip]
+}
+
 
 # IAM role for Lambda
 resource "aws_iam_role" "lambda_exec" {
