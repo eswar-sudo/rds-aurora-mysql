@@ -3,23 +3,23 @@ provider "aws" {
 }
 
 # Step 1: Generate random password
-resource "random_password" "rds_password" {
-  length  = 16
-  special = true
-}
+#resource "random_password" "rds_password" {
+ # length  = 16
+ # special = true
+#}
 
 # Step 2: Create Secrets Manager secret
-resource "aws_secretsmanager_secret" "rds_secret" {
-  name = "${var.db_identifier}-credentials"
-}
+#resource "aws_secretsmanager_secret" "rds_secret" {
+ # name = "${var.db_identifier}-credentials"
+#}
 
-resource "aws_secretsmanager_secret_version" "rds_secret_version" {
-  secret_id     = aws_secretsmanager_secret.rds_secret.id
-  secret_string = jsonencode({
-    username = var.db_username
-    password = random_password.rds_password.result
-  })
-}
+#resource "aws_secretsmanager_secret_version" "rds_secret_version" {
+#  secret_id     = aws_secretsmanager_secret.rds_secret.id
+#  secret_string = jsonencode({
+ #   username = var.db_username
+  #  password = random_password.rds_password.result
+  #})
+#}
 
 resource "aws_db_subnet_group" "this" {
   name       = "${var.db_identifier}-subnet-group"
@@ -52,12 +52,14 @@ resource "aws_rds_cluster" "aurora" {
   cluster_identifier     = var.db_identifier
   engine                 = "aurora-mysql"
   engine_version         = var.engine_version
-  master_username        = var.db_username
-  master_password        = random_password.rds_password.result
+ # master_username        = var.db_username
+ # master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
   skip_final_snapshot    = true
+  manage_master_user_password = true
+
 }
 
 resource "aws_rds_cluster_instance" "aurora_instances" {
@@ -76,13 +78,15 @@ resource "aws_db_instance" "mysql" {
   engine_version         = var.engine_version
   instance_class         = var.instance_class
   allocated_storage      = var.storage_gb
-  username               = var.db_username
-  password               = random_password.rds_password.result
+#  username               = var.db_username
+#  password               = random_password.rds_password.result
   db_name                = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
   skip_final_snapshot    = true
   multi_az               = true
+  manage_master_user_password = true
+
 }
 
 # 3. MySQL Multi-AZ DB Cluster (New Standard Cluster)
@@ -91,14 +95,16 @@ resource "aws_rds_cluster" "mysql_cluster" {
   cluster_identifier     = var.db_identifier
   engine                 = "mysql"
   engine_version         = var.engine_version
-  master_username        = var.db_username
-  master_password        = random_password.rds_password.result
+#  master_username        = var.db_username
+#  master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
   allocated_storage = var.storage_gb
   db_cluster_instance_class = var.instance_class
   skip_final_snapshot    = true
+  manage_master_user_password = true
+
 }
 
 resource "aws_rds_cluster_instance" "mysql_cluster_instances" {
