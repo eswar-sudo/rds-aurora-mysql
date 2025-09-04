@@ -52,7 +52,7 @@ resource "aws_rds_cluster" "aurora" {
   cluster_identifier     = var.db_identifier
   engine                 = "aurora-mysql"
   engine_version         = var.engine_version
- # master_username        = var.db_username
+  master_username        = var.db_username
  # master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
@@ -78,7 +78,7 @@ resource "aws_db_instance" "mysql" {
   engine_version         = var.engine_version
   instance_class         = var.instance_class
   allocated_storage      = var.storage_gb
-#  username               = var.db_username
+  username               = var.db_username
 #  password               = random_password.rds_password.result
   db_name                = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
@@ -95,7 +95,7 @@ resource "aws_rds_cluster" "mysql_cluster" {
   cluster_identifier     = var.db_identifier
   engine                 = "mysql"
   engine_version         = var.engine_version
-#  master_username        = var.db_username
+  master_username        = var.db_username
 #  master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
