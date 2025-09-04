@@ -10,10 +10,10 @@ output "db_port" {
   value = 3306
 }
 
-output "rds_secret_name" {
-  description = "Name of the Secrets Manager secret"
-  value       = aws_secretsmanager_secret.rds_secret.name
-}
+#output "rds_secret_name" {
+ # description = "Name of the Secrets Manager secret"
+#  value       = aws_secretsmanager_secret.rds_secret.name
+#}
 
 output "engine_type" {
   value = var.engine_type
