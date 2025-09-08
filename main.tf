@@ -9,9 +9,9 @@ provider "aws" {
 #}
 
 # Step 2: Create Secrets Manager secret
-#resource "aws_secretsmanager_secret" "rds_secret" {
-#  name = "${var.db_identifier}-credentials"
-#}
+resource "aws_secretsmanager_secret" "rds_secret" {
+  name = "${var.db_identifier}-credentials"
+}
 
 resource "aws_secretsmanager_secret_version" "rds_secret_version" {
   secret_id     = aws_secretsmanager_secret.rds_secret.id
