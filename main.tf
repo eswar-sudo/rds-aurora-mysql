@@ -2,25 +2,6 @@ provider "aws" {
   region = var.region
 }
 
-# Step 1: Generate random password
-#resource "random_password" "rds_password" {
- # length  = 16
- # special = true
-#}
-
-# Step 2: Create Secrets Manager secret
-#resource "aws_secretsmanager_secret" "rds_secret" {
-#  name = "${var.db_identifier}-credentials"
-#}
-
-#resource "aws_secretsmanager_secret_version" "rds_secret_version" {
- # secret_id     = aws_secretsmanager_secret.rds_secret.id
- # secret_string = jsonencode({
- # username = var.db_username
- # password = random_password.rds_password.result
- # })
-#}
-
 resource "aws_db_subnet_group" "this" {
   name       = "${var.db_identifier}-subnet-group"
   subnet_ids = var.subnet_ids
@@ -53,7 +34,6 @@ resource "aws_rds_cluster" "aurora" {
   engine                 = "aurora-mysql"
   engine_version         = var.engine_version
   master_username        = var.db_username
- # master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
@@ -79,7 +59,6 @@ resource "aws_db_instance" "mysql" {
   instance_class         = var.instance_class
   allocated_storage      = var.storage_gb
   username               = var.db_username
-  #password               = random_password.rds_password.result
   db_name                = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
@@ -96,7 +75,6 @@ resource "aws_rds_cluster" "mysql_cluster" {
   engine                 = "mysql"
   engine_version         = var.engine_version
   master_username        = var.db_username
-  #master_password        = random_password.rds_password.result
   database_name          = var.db_name
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.this.id]
