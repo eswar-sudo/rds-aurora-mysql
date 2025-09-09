@@ -13,6 +13,12 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
+varibale "cidr_blocks" {
+  description = "cidr blocks for the rds SG"
+  type        = string
+  default     = ["10.0.0.0/8"]
+}
+
 variable "engine_type" {
   description = "Engine type: 'aurora-mysql' or 'mysql'"
   type        = string
