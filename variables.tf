@@ -40,12 +40,6 @@ variable "db_username" {
   type        = string
 }
 
-#variable "db_password" {
- # description = "Master password"
- # type        = string
- # sensitive   = true
-#}
-
 variable "instance_class" {
   description = "Instance type"
   type        = string
