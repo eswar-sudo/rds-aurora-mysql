@@ -13,7 +13,7 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
-varibale "cidr_blocks" {
+variable "cidr_blocks" {
   description = "cidr blocks for the rds SG"
   type        = string
   default     = ["10.0.0.0/8"]
