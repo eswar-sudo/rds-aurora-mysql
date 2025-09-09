@@ -6,7 +6,6 @@ engine_type     = "aurora-mysql"  # Change to "mysql" or "aurora-mysql"
 db_identifier  = "rds-aurora-secret-2"
 db_name        = "mydatabase"
 db_username    = "eswar"
-#db_password    = "secure123"
 storage_gb = 20
 engine_version = "8.0.mysql_aurora.3.04.0"
 instance_class  = "db.t4g.medium"
