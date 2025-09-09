@@ -16,7 +16,7 @@ variable "subnet_ids" {
 variable "cidr_blocks" {
   description = "cidr blocks for the rds SG"
   type        = string
-  default     = ["10.0.0.0/16"]
+  default     = "10.0.0.0/16"
 }
 
 variable "engine_type" {
